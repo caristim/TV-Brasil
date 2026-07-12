@@ -1,4 +1,4 @@
-const CACHE_NAME = 'tvbrasil-v2'; // Cambiar versión para forzar actualización
+const CACHE_NAME = 'tvbrasil-v3'; // Cambiado a v3 para forzar actualización
 const urlsToCache = [
   './',
   './index.html',
@@ -13,7 +13,6 @@ self.addEventListener('install', event => {
   );
 });
 
-// Activar y limpiar caches antiguas
 self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys().then(cacheNames => {
