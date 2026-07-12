@@ -23,7 +23,7 @@ const channels = [
     {
         name: "Record",
         logoSvg: `<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><rect width="200" height="200" fill="#cc0000"/><text x="100" y="120" font-family="Arial Black" font-size="50" fill="white" text-anchor="middle">RECORD</text></svg>`,
-        streamUrl: "https://200.77.176.130:8000/udp/224.0.0.4:49152"  // UDP, probablemente no funcione
+        streamUrl: "https://200.77.176.130:8000/udp/224.0.0.4:49152"
     },
     {
         name: "RedeTV!",
