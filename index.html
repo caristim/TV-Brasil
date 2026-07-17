@@ -1,24 +1,36 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>TV Brasil</title>
-  <link rel="manifest" href="manifest.json">
-  <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TV BRASIL</title>
+<link rel="manifest" href="manifest.json">
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h1>📺 TV BRASIL</h1>
-  <div id="channels-container"></div>
 
-  <div id="video-player-container" class="hidden">
-    <button id="close-btn" onclick="closePlayer()">✕</button>
+<h1>TV BRASIL</h1>
+
+<div id="channels-container"></div>
+
+<div id="video-player-container" class="hidden">
+    <button id="close-btn" onclick="closePlayer()">&times;</button>
     <div id="loading">Cargando...</div>
-    <video id="video-player" controls autoplay playsinline></video>
-    <button id="retry-btn" style="display:none;">Reintentar</button>
-  </div>
+    <video id="video-player" controls autoplay style="display:none;"></video>
+</div>
 
-  <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.8/dist/hls.min.js"></script>
-  <script src="app.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.8/dist/hls.min.js"></script>
+<script src="app.js"></script>
+
+<script>
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js').catch(err => {
+            console.warn('No se pudo registrar el service worker:', err);
+        });
+    });
+}
+</script>
+
 </body>
 </html>
