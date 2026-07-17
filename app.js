@@ -2,7 +2,6 @@
 const channels = [
     {
         name: "GloboNews",
-        // Logo oficial de GloboNews (versión simplificada del círculo azul con "GN")
         logoSvg: `<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
             <circle cx="100" cy="100" r="90" fill="#0066cc"/>
             <circle cx="100" cy="100" r="70" fill="none" stroke="white" stroke-width="8"/>
@@ -12,7 +11,6 @@ const channels = [
     },
     {
         name: "BandNews",
-        // Logo oficial de BandNews (rectángulo con fondo azul marino y texto rojo)
         logoSvg: `<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
             <rect width="200" height="200" rx="20" fill="#1a2a4a"/>
             <rect x="20" y="20" width="160" height="160" rx="10" fill="none" stroke="#cc0000" stroke-width="6"/>
@@ -23,7 +21,6 @@ const channels = [
     },
     {
         name: "Record News",
-        // Logo oficial de Record News (cuadrado rojo con texto blanco)
         logoSvg: `<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
             <rect width="200" height="200" rx="15" fill="#cc0000"/>
             <text x="100" y="85" font-family="Arial Black" font-size="42" fill="white" text-anchor="middle">RECORD</text>
@@ -33,7 +30,6 @@ const channels = [
     },
     {
         name: "SBT Nacional",
-        // Logo oficial del SBT (círculo multicolor con "sbt" en minúsculas) - versión simplificada
         logoSvg: `<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
             <circle cx="100" cy="100" r="90" fill="#0066cc"/>
             <circle cx="100" cy="100" r="70" fill="none" stroke="#ffcc00" stroke-width="6"/>
@@ -44,7 +40,6 @@ const channels = [
     },
     {
         name: "Record",
-        // Logo oficial de Record TV (cuadrado rojo con texto blanco)
         logoSvg: `<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
             <rect width="200" height="200" rx="15" fill="#cc0000"/>
             <rect x="30" y="30" width="140" height="140" rx="8" fill="none" stroke="white" stroke-width="4"/>
@@ -54,7 +49,6 @@ const channels = [
     },
     {
         name: "RedeTV!",
-        // Logo oficial de RedeTV! (fondo amarillo con texto negro y signo de exclamación)
         logoSvg: `<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
             <rect width="200" height="200" rx="15" fill="#ffcc00"/>
             <text x="100" y="110" font-family="Arial Black" font-size="48" fill="#000000" text-anchor="middle">RedeTV</text>
@@ -64,7 +58,6 @@ const channels = [
     },
     {
         name: "Band Sports",
-        // Logo oficial de Band Sports (fondo rojo con "BS" en blanco)
         logoSvg: `<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
             <rect width="200" height="200" rx="15" fill="#cc0000"/>
             <polygon points="100,30 170,85 140,170 60,170 30,85" fill="none" stroke="white" stroke-width="6"/>
@@ -74,7 +67,6 @@ const channels = [
     },
     {
         name: "TV Globo",
-        // Logo oficial de TV Globo (círculo azul con esfera blanca)
         logoSvg: `<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
             <circle cx="100" cy="100" r="90" fill="#0066cc"/>
             <circle cx="100" cy="100" r="70" fill="none" stroke="white" stroke-width="6"/>
@@ -84,7 +76,97 @@ const channels = [
     }
 ];
 
-// El resto del código de app.js (reproducción, manejo de errores, etc.) se mantiene igual.
-// Asegúrate de incluir todo el código que ya te di anteriormente a partir de aquí.
+const container = document.getElementById('channels-container');
+const playerContainer = document.getElementById('video-player-container');
+const video = document.getElementById('video-player');
+const loading = document.getElementById('loading');
+let hls = null;
 
-// ... (código de reproducción, eventos, etc.) ...
+const isPCBrowser = !/Android|TV|BRAVIA|CrKey|SmartTV/i.test(navigator.userAgent);
+
+channels.forEach((channel) => {
+    const card = document.createElement('div');
+    card.classList.add('channel-card');
+    card.setAttribute('tabindex', '0');
+
+    card.innerHTML = `
+        <div class="channel-logo">${channel.logoSvg}</div>
+        <span class="channel-name">${channel.name}</span>
+    `;
+
+    const playAction = () => playStream(channel.streamUrl, channel.name);
+    card.addEventListener('click', playAction);
+    card.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') playAction();
+    });
+
+    container.appendChild(card);
+});
+
+function playStream(url, channelName) {
+    playerContainer.classList.remove('hidden');
+    loading.style.display = 'block';
+    loading.innerText = `Cargando ${channelName}...`;
+    video.style.display = 'none';
+
+    if (hls) {
+        hls.destroy();
+        hls = null;
+    }
+
+    video.pause();
+    video.removeAttribute('src');
+    video.load();
+
+    if (isPCBrowser && Hls.isSupported()) {
+        hls = new Hls({ enableWorker: true, lowLatencyMode: true });
+        hls.loadSource(url);
+        hls.attachMedia(video);
+
+        hls.on(Hls.Events.MANIFEST_PARSED, () => {
+            loading.style.display = 'none';
+            video.style.display = 'block';
+            video.play().catch(() => {
+                loading.innerText = "Dale play manualmente";
+                loading.style.display = 'block';
+            });
+        });
+
+        hls.on(Hls.Events.ERROR, (event, data) => {
+            if (data.fatal) {
+                loading.innerText = `${channelName}: Error de conexión.`;
+            }
+        });
+
+    } else {
+        video.src = url;
+        video.onloadeddata = () => {
+            loading.style.display = 'none';
+            video.style.display = 'block';
+            video.play();
+        };
+        video.onerror = () => {
+            loading.innerText = `${channelName}: No se puede reproducir aquí.`;
+        };
+        video.load();
+    }
+}
+
+function closePlayer() {
+    playerContainer.classList.add('hidden');
+    video.pause();
+    video.src = "";
+    video.removeAttribute('src');
+    video.load();
+    if (hls) {
+        hls.destroy();
+        hls = null;
+    }
+    loading.innerText = "Cargando...";
+}
+
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !playerContainer.classList.contains('hidden')) {
+        closePlayer();
+    }
+});
